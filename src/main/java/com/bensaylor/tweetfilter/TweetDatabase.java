@@ -16,14 +16,14 @@ import com.almworks.sqlite4java.SQLiteStatement;
 import com.google.gson.Gson;
 
 public class TweetDatabase {
-
     private SQLiteConnection db = null;
     private SQLiteStatement insertStatement = null;
     private int tweetsImported;
     private int duplicates;
 
-    public TweetDatabase() {
-        File dbfile = new File("tweets.sqlite");
+    public TweetDatabase(File dbfile) {
+
+        // Open the SQLite database file, creating if it doesn't exist
         db = new SQLiteConnection(dbfile);
         try {
             db.open();

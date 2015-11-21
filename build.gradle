@@ -35,4 +35,10 @@ test {
 run {
     dependsOn copyNativeDeps
     systemProperty 'java.library.path', 'build/libs'
+
+    // Allow passing arguments to the program from the command line with:
+    // gradle run -Pargs="-my args for the system"
+    if(project.hasProperty('args')){
+        args project.args.split('\\s+')
+    }
 }

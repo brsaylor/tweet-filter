@@ -3,3 +3,4 @@ build/
 .gradle/
 .settings/
 workbench.xmi
+data/
