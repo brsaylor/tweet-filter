@@ -15,6 +15,13 @@ import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
 import com.google.gson.Gson;
 
+/**
+ * Interface to an SQLite database containing a subset of the Tweets2011 corpus.
+ * Before the database can be used, createTable() and insertJsonFiles() must be
+ * used to initialize and populate it.
+ *
+ * @author Ben Saylor
+ */
 public class TweetDatabase {
     private SQLiteConnection db = null;
     private SQLiteStatement insertStatement = null;
@@ -22,6 +29,11 @@ public class TweetDatabase {
     private int tweetsImported;
     private int duplicates;
 
+    /**
+     * Open the database file, creating it if it doesn't exist.
+     *
+     * @param dbfile Filename of the SQLite database
+     */
     public TweetDatabase(File dbfile) {
 
         // Open the SQLite database file, creating if it doesn't exist
@@ -35,6 +47,9 @@ public class TweetDatabase {
         }
     }
 
+    /**
+     * Create the 'tweets' table in the database.
+     */
     public void createTable() {
         if (db == null) {
             System.err.println("Error: database is not open");
@@ -58,6 +73,12 @@ public class TweetDatabase {
         }
     }
 
+    /**
+     * Import a compressed JSON file created by twitter-tools into the database.
+     * Tweets with duplicate IDs are ignored.
+     * 
+     * @param filename Name of the *.json.gz file to import
+     */
     public void importJsonFile(String filename) {
         Gson gson = new Gson();
 
@@ -111,6 +132,11 @@ public class TweetDatabase {
         }
     }
     
+    /**
+     * Import the given compressed JSON files into the database.
+     *
+     * @param filenames The names of the *.json.gz files to import
+     */
     public void importJsonFiles(String[] filenames) {
         tweetsImported = 0;
         duplicates = 0;
@@ -129,6 +155,13 @@ public class TweetDatabase {
         }
     }
 
+    /**
+     * Add a single Tweet to the database.
+     *
+     * @param tweet The Tweet to insert
+     *
+     * @throws SQLiteException
+     */
     public void insertTweet(Tweet tweet) throws SQLiteException {
 
         // Prepare or reset insert statement
@@ -173,6 +206,12 @@ public class TweetDatabase {
         }
     }
 
+    /**
+     * Initiate a database query to retrieve tweets in ID order.
+     * Tweets are retrieved by calling the next() method.
+     *
+     * @param id The ID of the tweet to start from
+     */
     public void startFromTweetId(long id) {
         if (selectStatement != null) {
             selectStatement.dispose();
@@ -192,6 +231,12 @@ public class TweetDatabase {
         }
     }
 
+    /**
+     * Fetch the next Tweet in the currently available database query results.
+     * A select query must first have been initiated.
+     *
+     * @return The next Tweet, or null if there are no more results
+     */
     public Tweet next() {
         if (selectStatement == null) {
             return null;

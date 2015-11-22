@@ -7,6 +7,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * tweet-filter main program.
+ *
+ * A version of the TREC 2012 Microblog track filtering task.
+ *
+ * The program is used by passing commmands and options as command-line
+ * arguments. For a list of commands and options, see the help printed out when
+ * the program is run without arguments.
+ *
+ * @author Ben Saylor
+ */
 public class Main {
     final private static File dbfile = new File("data/tweets.sqlite");
     private static TweetDatabase db = null;
@@ -37,6 +48,9 @@ public class Main {
         }
     }
 
+    /**
+     * Print out the help text.
+     */
     public static void printUsage() {
         System.err.println("\nUsage: tweet-filter <command> [options]\n");
         System.err.println("Commands:\n");
@@ -50,6 +64,11 @@ public class Main {
                 + " starting from the given ID (no filtering)\n");
     }
 
+    /**
+     * Command: Create the tweet database and populate it from the listed files.
+     *
+     * @param inputListFile Filename containing names of .json.gz files
+     */
     public static void createdb(String inputListFile) {
         ArrayList<String> filenameList = new ArrayList<>();
         try (
@@ -73,6 +92,11 @@ public class Main {
         db.importJsonFiles(filenames);
     }
 
+    /**
+     * Command: Interactively fetch and display tweets one-by-one in ID order.
+     *
+     * @param tweetIdString ID of tweet to start from
+     */
     public static void stepfrom(String tweetIdString) {
         long tweetId = Long.parseLong(tweetIdString);
         db = new TweetDatabase(dbfile);

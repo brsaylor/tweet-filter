@@ -1,5 +1,10 @@
 package com.bensaylor.tweetfilter;
 
+/**
+ * Data model representing an individual tweet.
+ *
+ * @author Ben Saylor
+ */
 public class Tweet {
     long id;
     String text;
