@@ -5,19 +5,30 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Main {
     final private static File dbfile = new File("data/tweets.sqlite");
     private static TweetDatabase db = null;
 
     public static void main(String[] args) {
+
         if (args.length > 0) {
+
             if (args[0].equals("createdb")) {
                 if (args.length < 2) {
                     printUsage();
                 } else {
                     createdb(args[1]);
                 }
+
+            } else if (args[0].equals("stepfrom")) {
+                if (args.length < 2) {
+                    printUsage();
+                } else {
+                    stepfrom(args[1]);
+                }
+
             } else {
                 printUsage();
             }
@@ -33,6 +44,10 @@ public class Main {
         System.err.println("createdb <input-list-file>\n"
                 + "  Import the .json.gz files listed in <input-list-file>"
                 + " into ./data/tweets.sqlite\n");
+
+        System.err.println("stepfrom <start-tweet-id>\n"
+                + "  Retrieve and display tweets in ID order,"
+                + " starting from the given ID (no filtering)\n");
     }
 
     public static void createdb(String inputListFile) {
@@ -56,5 +71,19 @@ public class Main {
         db = new TweetDatabase(dbfile);
         db.createTable();
         db.importJsonFiles(filenames);
+    }
+
+    public static void stepfrom(String tweetIdString) {
+        long tweetId = Long.parseLong(tweetIdString);
+        db = new TweetDatabase(dbfile);
+        db.startFromTweetId(tweetId);
+        System.out.println("Press enter to retrieve each next tweet.");
+        Scanner input = new Scanner(System.in);
+        Tweet tweet;
+        while ((tweet = db.next()) != null) {
+            System.out.println(tweet.toString());
+            input.nextLine();
+        }
+        input.close();
     }
 }

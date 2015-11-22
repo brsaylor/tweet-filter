@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 public class TweetDatabase {
     private SQLiteConnection db = null;
     private SQLiteStatement insertStatement = null;
+    private SQLiteStatement selectStatement = null;
     private int tweetsImported;
     private int duplicates;
 
@@ -170,5 +171,67 @@ public class TweetDatabase {
                 throw e;
             }
         }
+    }
+
+    public void startFromTweetId(long id) {
+        if (selectStatement != null) {
+            selectStatement.dispose();
+        }
+        try {
+            selectStatement = db.prepare(
+                    "select " +
+                    "id, text_, created_at, " +
+                    "retweeted, retweet_count, favorited, " +
+                    "user_id, user_screen_name, user_name, requested_id " +
+                    "from tweets where id >= ? order by id");
+            selectStatement.bind(1, id);
+        } catch (SQLiteException e) {
+            System.err.println("Error creating select statement: " 
+                    + e.getMessage());
+            return;
+        }
+    }
+
+    public Tweet next() {
+        if (selectStatement == null) {
+            return null;
+        }
+
+        Tweet tweet;
+
+        boolean rowReturned = false;
+        try {
+            rowReturned = selectStatement.step();
+        } catch (SQLiteException e) {
+            System.err.println("Error getting result row: " + e.getMessage());
+        }
+
+        if (rowReturned) {
+            tweet = new Tweet();
+            tweet.user = new User();
+            try {
+                tweet.id = selectStatement.columnLong(0);
+                tweet.text = selectStatement.columnString(1);
+                tweet.created_at = selectStatement.columnString(2);
+                tweet.retweeted = selectStatement.columnInt(3) == 1;
+                tweet.retweet_count = selectStatement.columnLong(4);
+                tweet.favorited = selectStatement.columnInt(5) == 1;
+                tweet.user.id = selectStatement.columnLong(6);
+                tweet.user.screen_name = selectStatement.columnString(7);
+                tweet.user.name = selectStatement.columnString(8);
+                tweet.requested_id = selectStatement.columnLong(9);
+            } catch (SQLiteException e) {
+                System.err.println("Error retrieving column values: " 
+                        + e.getMessage());
+                tweet = null;
+            }
+        } else {
+            // No more rows
+            selectStatement.dispose();
+            selectStatement = null;
+            tweet = null;
+        }
+
+        return tweet;
     }
 }
