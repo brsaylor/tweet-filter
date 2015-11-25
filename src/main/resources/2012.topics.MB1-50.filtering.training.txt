@@ -1,0 +1,79 @@
+<top>
+<num> Number: MB001 </num>
+<title> BBC World Service staff cuts </title>
+<querytime> Tue Feb 08 12:30:27 +0000 2011 </querytime>
+<querytweettime> 29509222337085440 </querytweettime>
+<querynewesttweet> 34952194402811904 </querynewesttweet>
+</top>
+
+<top>
+<num> Number: MB006 </num>
+<title> NSA  </title>
+<querytime> Tue Feb 08 16:00:59 +0000 2011 </querytime>
+<querytweettime> 30264640881561601 </querytweettime>
+<querynewesttweet> 35005178885181441 </querynewesttweet>
+</top>
+
+<top>
+<num> Number: MB011 </num>
+<title> Kubica crash </title>
+<querytime> Sun Feb 06 10:38:43 +0000 2011 </querytime>
+<querytweettime> 33433747902697472 </querytweettime>
+<querynewesttweet> 34199299428581376 </querynewesttweet>
+</top>
+
+<top>
+<num> Number: MB016 </num>
+<title> release of "Known and Unknown"  </title>
+<querytime> Mon Jan 24 17:03:52 +0000 2011 </querytime>
+<querytweettime> 29546806463430656 </querytweettime>
+<querynewesttweet> 29585186899365888 </querynewesttweet>
+</top>
+
+<top>
+<num> Number: MB021 </num>
+<title> Emanuel residency court rulings </title>
+<querytime> Sat Jan 29 03:03:30 +0000 2011 </querytime>
+<querytweettime> 29599499252932608 </querytweettime>
+<querynewesttweet> 31185639047172097 </querynewesttweet>
+</top>
+
+<top>
+<num> Number: MB026 </num>
+<title> US unemployment </title>
+<querytime> Fri Feb 04 14:10:51 +0000 2011 </querytime>
+<querytweettime> 28976831738683393 </querytweettime>
+<querynewesttweet> 33527910379814912 </querynewesttweet>
+</top>
+
+<top>
+<num> Number: MB031 </num>
+<title> Special Olympics athletes </title>
+<querytime> Fri Feb 04 08:44:02 +0000 2011 </querytime>
+<querytweettime> 29528213755531265 </querytweettime>
+<querynewesttweet> 33445664922800129 </querynewesttweet>
+</top>
+
+<top>
+<num> Number: MB036 </num>
+<title> Moscow airport bombing </title>
+<querytime> Mon Jan 24 23:00:35 +0000 2011  </querytime>
+<querytweettime> 29540259654012928 </querytweettime>
+<querynewesttweet> 29674954899333120 </querynewesttweet>
+</top>
+
+<top>
+<num> Number: MB041 </num>
+<title> Obama birth certificate </title>
+<querytime> Mon Jan 31 17:55:54 +0000 2011 </querytime>
+<querytweettime> 28973080491589632 </querytweettime>
+<querynewesttweet> 32134993337647104 </querynewesttweet>
+</top>
+
+<top>
+<num> Number: MB046 </num>
+<title> Bottega Veneta </title>
+<querytime> Tue Feb 08 22:34:59 +0000 2011 </querytime>
+<querytweettime> 30418510702186496 </querytweettime>
+<querynewesttweet> 35104330025541632 </querynewesttweet>
+</top>
