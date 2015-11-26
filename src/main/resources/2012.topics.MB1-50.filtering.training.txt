@@ -1,3 +1,5 @@
+<topics>
+
 <top>
 <num> Number: MB001 </num>
 <title> BBC World Service staff cuts </title>
@@ -77,3 +79,5 @@
 <querytweettime> 30418510702186496 </querytweettime>
 <querynewesttweet> 35104330025541632 </querynewesttweet>
 </top>
+
+</topics>

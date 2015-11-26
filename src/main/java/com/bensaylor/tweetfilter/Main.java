@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -40,6 +41,9 @@ public class Main {
                     stepfrom(args[1]);
                 }
 
+            } else if (args[0].equals("showtopics")) {
+                showtopics();
+
             } else {
                 printUsage();
             }
@@ -62,6 +66,9 @@ public class Main {
         System.err.println("stepfrom <start-tweet-id>\n"
                 + "  Retrieve and display tweets in ID order,"
                 + " starting from the given ID (no filtering)\n");
+
+        System.err.println("showtopics\n"
+                + "  Show the list of training topics\n");
     }
 
     /**
@@ -109,5 +116,18 @@ public class Main {
             input.nextLine();
         }
         input.close();
+    }
+
+    /**
+     * Command: List the training topics.
+     */
+    public static void showtopics() {
+        TopicsFileParser parser = new TopicsFileParser();
+        InputStream inputStream = parser.getClass()
+            .getResourceAsStream("/2012.topics.MB1-50.filtering.training.txt");
+        ArrayList<Topic> topics = parser.parseTopics(inputStream);
+        for (Topic topic : topics) {
+            System.out.println(topic.toString());
+        }
     }
 }
