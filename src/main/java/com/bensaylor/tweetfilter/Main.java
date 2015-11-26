@@ -44,6 +44,13 @@ public class Main {
             } else if (args[0].equals("showtopics")) {
                 showtopics();
 
+            } else if (args[0].equals("writeqrels")) {
+                if (args.length < 2) {
+                    printUsage();
+                } else {
+                    writeqrels(args[1]);
+                }
+
             } else {
                 printUsage();
             }
@@ -69,6 +76,10 @@ public class Main {
 
         System.err.println("showtopics\n"
                 + "  Show the list of training topics\n");
+
+        System.err.println("writeqrels <filename>\n"
+                + "  Write the training qrels to the given file"
+                + " (mostly for testing that they were read correctly)\n");
     }
 
     /**
@@ -129,5 +140,18 @@ public class Main {
         for (Topic topic : topics) {
             System.out.println(topic.toString());
         }
+    }
+
+    /**
+     * Command: Write the training qrels to the given file.
+     *
+     * @param filename The output qrels filename
+     */
+    public static void writeqrels(String filename) {
+        FilterController controller = new FilterController();
+        InputStream inputStream = controller.getClass()
+            .getResourceAsStream("/filtering-qrels.training");
+        controller.readQrels(inputStream);
+        controller.writeQrels(filename);
     }
 }

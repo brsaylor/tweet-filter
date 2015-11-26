@@ -1,0 +1,102 @@
+package com.bensaylor.tweetfilter;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
+
+/**
+ * 
+ *
+ * @author Ben Saylor
+ */
+public class FilterController {
+    private ArrayList<Topic> topics = null;
+
+    // Maps topic number to set of relevance judgments,
+    // where each set of relevance judgments is a map from tweet ID to relevance
+    // value. The relevance values are defined in Constants.
+    private TreeMap<Integer, TreeMap<Long, Integer>> judgments = null;
+
+    public FilterController() {
+    }
+
+    /**
+     * Read the topics from a topics XML file given as an InputStream.
+     * This allows reading the topics from a resource returned by
+     * Class.getResourceAsStream(), or from a file on the filesystem.
+     *
+     * @param inputStream An InputStream for reading the topics file
+     */
+    public void readTopics(InputStream inputStream) {
+        TopicsFileParser parser = new TopicsFileParser();
+        topics = parser.parseTopics(inputStream);
+    }
+
+    /**
+     * Read the relevance judgments from a qrels file given as an InputStream.
+     * This allows reading the qrels from a resource returned by
+     * Class.getResourceAsStream(), or from a file on the filesystem.
+     *
+     * @param inputStream An InputString for reading the qrels file
+     */
+    public void readQrels(InputStream inputStream) {
+        judgments = new TreeMap<>();
+        BufferedReader reader
+            = new BufferedReader(new InputStreamReader(inputStream));
+        try {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] tokens = line.split(" ");
+                Integer topicNumber = new Integer(tokens[0]);
+                Long tweetId = new Long(tokens[2]);
+                Integer relevance = new Integer(tokens[3]);
+                if (!judgments.containsKey(topicNumber)) {
+                    judgments.put(topicNumber, new TreeMap<Long, Integer>());
+                }
+                judgments.get(topicNumber).put(tweetId, relevance);
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading qrels file: "
+                    + e.getMessage());
+            judgments = null;
+            return;
+        }
+    }
+
+    /**
+     * Write the relevance judgments to a qrels file with the given name.
+     * This is mostly for testing that the input qrels file was read correctly.
+     *
+     * @param filename The output qrels filename
+     */
+    public void writeQrels(String filename) {
+        try (PrintWriter writer = new PrintWriter(filename)) {
+
+            // Loop over topic numbers in ascending order
+            for (Map.Entry<Integer,TreeMap<Long,Integer>> topicEntry
+                    : judgments.entrySet()) {
+
+                Integer topicNumber = topicEntry.getKey();
+                TreeMap<Long,Integer> topicMap = topicEntry.getValue();
+
+                // Loop over tweet IDs in descending order
+                for (Map.Entry<Long,Integer> tweetEntry
+                        : topicMap.descendingMap().entrySet()) {
+
+                    Long tweetId = tweetEntry.getKey();
+                    Integer relevance = tweetEntry.getValue();
+
+                    writer.printf("%d 0 %d %d\n",
+                            topicNumber, tweetId, relevance);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error writing qrels file: " + e.getMessage());
+        }
+    }
+}
