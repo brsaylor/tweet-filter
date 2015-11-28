@@ -21,6 +21,11 @@ import java.util.Scanner;
  */
 public class Main {
     final private static File dbfile = new File("data/tweets.sqlite");
+    final private static String trainingTopicsFile =
+        "/2012.topics.MB1-50.filtering.training.txt";
+    final private static String trainingQrelsFile =
+        "/filtering-qrels.training";
+
     private static TweetDatabase db = null;
 
     public static void main(String[] args) {
@@ -32,6 +37,13 @@ public class Main {
                     printUsage();
                 } else {
                     createdb(args[1]);
+                }
+
+            } else if (args[0].equals("run")) {
+                if (args.length < 4) {
+                    printUsage();
+                } else {
+                    run(args[1], args[2], args[3]);
                 }
 
             } else if (args[0].equals("stepfrom")) {
@@ -63,12 +75,19 @@ public class Main {
      * Print out the help text.
      */
     public static void printUsage() {
-        System.err.println("\nUsage: tweet-filter <command> [options]\n");
+        System.err.println("\nUsage: tweet-filter <command> [arguments]\n");
         System.err.println("Commands:\n");
 
         System.err.println("createdb <input-list-file>\n"
                 + "  Import the .json.gz files listed in <input-list-file>"
                 + " into ./data/tweets.sqlite\n");
+
+        System.err.println("run <filter> <run-tag> <output-file>\n"
+                + "  Run the given filter with the training topics"
+                + " and write the results to <output-file>"
+                + " including the given <run-tag>.\n"
+                + "  Available filters:\n"
+                + "    baseline: classifies all tweets as relevant\n");
 
         System.err.println("stepfrom <start-tweet-id>\n"
                 + "  Retrieve and display tweets in ID order,"
@@ -111,6 +130,32 @@ public class Main {
     }
 
     /**
+     * Command: Run the given filter on all training topics.
+     *
+     * @param filterName Name of the filter to run (see program usage message)
+     * @param runTag String to include at end of each output line
+     * @param outputFile Name of output file
+     */
+    public static void run(String filterName, String runTag, String outputFile) {
+        Filter filter;
+        if (filterName.equals("baseline")) {
+            filter = new Filter();
+        } else {
+            printUsage();
+            return;
+        }
+        db = new TweetDatabase(dbfile);
+        FilterController controller = new FilterController();
+        controller.setDatabase(db);
+        controller.setFilter(filter);
+        controller.readTopics(controller.getClass().getResourceAsStream(
+                    trainingTopicsFile));
+        controller.readQrels(controller.getClass().getResourceAsStream(
+                    trainingQrelsFile));
+        controller.run(runTag, outputFile);
+    }
+
+    /**
      * Command: Interactively fetch and display tweets one-by-one in ID order.
      *
      * @param tweetIdString ID of tweet to start from
@@ -135,7 +180,7 @@ public class Main {
     public static void showtopics() {
         TopicsFileParser parser = new TopicsFileParser();
         InputStream inputStream = parser.getClass()
-            .getResourceAsStream("/2012.topics.MB1-50.filtering.training.txt");
+            .getResourceAsStream(trainingTopicsFile);
         ArrayList<Topic> topics = parser.parseTopics(inputStream);
         for (Topic topic : topics) {
             System.out.println(topic.toString());
@@ -150,7 +195,7 @@ public class Main {
     public static void writeqrels(String filename) {
         FilterController controller = new FilterController();
         InputStream inputStream = controller.getClass()
-            .getResourceAsStream("/filtering-qrels.training");
+            .getResourceAsStream(trainingQrelsFile);
         controller.readQrels(inputStream);
         controller.writeQrels(filename);
     }
