@@ -36,6 +36,8 @@ run {
     dependsOn copyNativeDeps
     systemProperty 'java.library.path', 'build/libs'
 
+    applicationDefaultJvmArgs = ["-XX:+UnlockCommercialFeatures", "-XX:+FlightRecorder"] 
+
     // Allow passing arguments to the program from the command line with:
     // gradle run -Pargs="-my args for the system"
     if(project.hasProperty('args')){

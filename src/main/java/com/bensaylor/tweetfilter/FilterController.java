@@ -151,7 +151,7 @@ public class FilterController {
             // Main filtering loop
             while (tweet != null && tweet.id <= topic.queryNewestTweet) {
                 FilterDecision decision = filter.decide(tweet);
-                writer.printf("MB%02d %d %.3f %s %s\n",
+                writer.printf("MB%03d %d %.3f %s %s\n",
                         topic.number,
                         tweet.id,
                         decision.score,
