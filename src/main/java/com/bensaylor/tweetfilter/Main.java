@@ -87,7 +87,9 @@ public class Main {
                 + " and write the results to <output-file>"
                 + " including the given <run-tag>.\n"
                 + "  Available filters:\n"
-                + "    baseline: classifies all tweets as relevant\n");
+                + "    baseline: classifies all tweets as relevant\n"
+                + "    boolean-or: retrieves tweets with any of the terms in the query\n"
+                );
 
         System.err.println("stepfrom <start-tweet-id>\n"
                 + "  Retrieve and display tweets in ID order,"
@@ -140,6 +142,8 @@ public class Main {
         Filter filter;
         if (filterName.equals("baseline")) {
             filter = new Filter();
+        } else if (filterName.equals("boolean-or")) {
+            filter = new BooleanOrFilter();
         } else {
             printUsage();
             return;
