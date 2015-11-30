@@ -101,15 +101,15 @@ public class FilterController {
      * space-separated fields:
      *   topic-number tweet-id score retrieval-decision run-tag
      * Example:
-     *   MB01 3857291841983981 1.999 no myRun
+     *   MB01 3857291841983981 1.999 yes myRun
      *   MB01 3857291841983302 3.878 yes myRun
-     *   MB01 3857291841983301 0.314 no myRun
      *   ...
-     *   MB02 3857291214283390 0.000001 no myRun
+     *   MB02 3857291214283390 2.102 yes myRun
      *   ... 
      * 
      * See https://sites.google.com/site/microblogtrack/2012-guidelines for more
-     * information.
+     * information. In this implementation, a decision is only written to the
+     * file if the retrieval decision is positive.
      *
      * Before calling this method, readTopics(), readJudgments(), setDatabase(),
      * and setFilter() must be called.
@@ -151,13 +151,12 @@ public class FilterController {
             // Main filtering loop
             while (tweet != null && tweet.id <= topic.queryNewestTweet) {
                 FilterDecision decision = filter.decide(tweet);
-                writer.printf("MB%03d %d %.3f %s %s\n",
-                        topic.number,
-                        tweet.id,
-                        decision.score,
-                        decision.retrieve ? "yes" : "no",
-                        runTag);
                 if (decision.retrieve) {
+                    writer.printf("MB%03d %d %.3f yes %s\n",
+                            topic.number,
+                            tweet.id,
+                            decision.score,
+                            runTag);
                     if (topicJudgments.containsKey(tweet.id)) {
                         int relevance = topicJudgments.get(tweet.id);
                         if (relevance != Constants.NOT_JUDGED) {
