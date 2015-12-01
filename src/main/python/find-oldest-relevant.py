@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
+import sys
+
 """
-From the training qrels file, find the oldest known relevant tweet for each of
-the training topics and print it out. This output was used to populate
+From the given qrels file, find the oldest known relevant tweet for each of
+the topics and print it out. This output was used to populate
 querytweettime for each of the topics in
-src/main/resources/2012.topics.MB1-50.filtering.training.txt.
+src/main/resources/2012.topics.MB1-50.filtering.training.[pruned].txt.
 """
 
 oldestByTopic = {}
 
-with open('filtering-qrels.training') as f:
+with open(sys.argv[1]) as f:
     for line in f:
         tokens = line.split()
         topic = int(tokens[0])
