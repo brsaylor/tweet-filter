@@ -24,9 +24,9 @@ import java.util.Scanner;
 public class Main {
     final private static File dbfile = new File("data/tweets.sqlite");
     final private static String trainingTopicsFile =
-        "/2012.topics.MB1-50.filtering.training.txt";
+        "/2012.topics.MB1-50.filtering.training.pruned.txt";
     final private static String trainingQrelsFile =
-        "/filtering-qrels.training";
+        "/filtering-qrels.training.pruned";
 
     private static TweetDatabase db = null;
 
