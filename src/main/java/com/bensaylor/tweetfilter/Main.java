@@ -2,9 +2,11 @@ package com.bensaylor.tweetfilter;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -63,6 +65,13 @@ public class Main {
                     writeqrels(args[1]);
                 }
 
+            } else if (args[0].equals("pruneqrels")) {
+                if (args.length < 3) {
+                    printUsage();
+                } else {
+                    pruneqrels(args[1], args[2]);
+                }
+
             } else {
                 printUsage();
             }
@@ -101,6 +110,10 @@ public class Main {
         System.err.println("writeqrels <filename>\n"
                 + "  Write the training qrels to the given file"
                 + " (mostly for testing that they were read correctly)\n");
+
+        System.err.println("pruneqrels <infile> <outfile>\n"
+                + "  Read qrels from <infile>, remove tweets not in DB,"
+                + " write to <outfile>\n");
     }
 
     /**
@@ -202,5 +215,34 @@ public class Main {
             .getResourceAsStream(trainingQrelsFile);
         controller.readQrels(inputStream);
         controller.writeQrels(filename);
+    }
+
+    /**
+     * Command: prune qrels for which the tweet doesn't exist in the database.
+     *
+     * @param infile Input qrels file
+     * @param outfile Output qrels file
+     */
+    public static void pruneqrels(String infile, String outfile) {
+        try (
+                BufferedReader reader = new BufferedReader(
+                    new FileReader(infile));
+                PrintWriter writer = new PrintWriter(outfile)) {
+            
+            db = new TweetDatabase(dbfile);
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                long tweetId = Long.parseLong(line.split(" ")[2]);
+                if (db.tweetExists(tweetId)) {
+                    writer.println(line);
+                }
+            }
+
+        } catch (FileNotFoundException e) {
+            System.err.println("Error: file not found: " + infile);
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
     }
 }

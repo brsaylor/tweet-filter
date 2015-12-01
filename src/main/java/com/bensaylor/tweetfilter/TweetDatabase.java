@@ -26,6 +26,7 @@ public class TweetDatabase {
     private SQLiteConnection db = null;
     private SQLiteStatement insertStatement = null;
     private SQLiteStatement selectStatement = null;
+    private SQLiteStatement existsStatement = null;
     private int tweetsImported;
     private int duplicates;
 
@@ -278,5 +279,32 @@ public class TweetDatabase {
         }
 
         return tweet;
+    }
+
+    /**
+     * Check whether a tweet with the given ID exists in the database.
+     *
+     * @param id The tweet ID to check
+     * @return true if the tweet exists in the database; false otherwise
+     */
+    public boolean tweetExists(long id) {
+        try {
+            if (existsStatement == null) {
+                existsStatement = db.prepare(
+                        "select exists (select * from tweets where id = ?)");
+            } else {
+                existsStatement.reset();
+            }
+            existsStatement.bind(1, id);
+            if (existsStatement.step()) {
+                return (existsStatement.columnInt(0) == 1);
+            } else {
+                System.err.println("Error: empty result");
+                return false;
+            }
+        } catch (SQLiteException e) {
+            System.err.println("Error: " + e.getMessage());
+            return false;
+        }
     }
 }
