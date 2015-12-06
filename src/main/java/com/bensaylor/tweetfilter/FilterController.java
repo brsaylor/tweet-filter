@@ -159,9 +159,7 @@ public class FilterController {
                             runTag);
                     if (topicJudgments.containsKey(tweet.id)) {
                         int relevance = topicJudgments.get(tweet.id);
-                        if (relevance != Constants.NOT_JUDGED) {
-                            filter.feedback(tweet, relevance);
-                        }
+                        filter.feedback(tweet, relevance);
                     }
                 }
                 tweet = db.next();
