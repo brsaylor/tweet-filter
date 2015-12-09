@@ -98,6 +98,7 @@ public class Main {
                 + "  Available filters:\n"
                 + "    baseline: classifies all tweets as relevant\n"
                 + "    boolean-or: retrieves tweets with any of the terms in the query\n"
+                + "    bayes: naive Bayes filter\n"
                 );
 
         System.err.println("stepfrom <start-tweet-id>\n"
@@ -157,6 +158,8 @@ public class Main {
             filter = new Filter();
         } else if (filterName.equals("boolean-or")) {
             filter = new BooleanOrFilter();
+        } else if (filterName.equals("bayes")) {
+            filter = new BayesFilter();
         } else {
             printUsage();
             return;
