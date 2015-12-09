@@ -55,6 +55,13 @@ public class Main {
                     stepfrom(args[1]);
                 }
 
+            } else if (args[0].equals("showtweet")) {
+                if (args.length < 2) {
+                    printUsage();
+                } else {
+                    showtweet(args[1]);
+                }
+
             } else if (args[0].equals("showtopics")) {
                 showtopics();
 
@@ -100,6 +107,9 @@ public class Main {
                 + "    boolean-or: retrieves tweets with any of the terms in the query\n"
                 + "    bayes: naive Bayes filter\n"
                 );
+
+        System.err.println("showtweet <tweet-id>\n"
+                + "  Show the tweet with the given ID\n");
 
         System.err.println("stepfrom <start-tweet-id>\n"
                 + "  Retrieve and display tweets in ID order,"
@@ -173,6 +183,20 @@ public class Main {
         controller.readQrels(controller.getClass().getResourceAsStream(
                     trainingQrelsFile));
         controller.run(runTag, outputFile);
+    }
+
+    /**
+     * Command: Fetch and display the tweet with the given id.
+     *
+     * @param tweetIdString ID of the tweet to fetch
+     */
+    public static void showtweet(String tweetIdString) {
+        long tweetId = Long.parseLong(tweetIdString);
+        db = new TweetDatabase(dbfile);
+        Tweet tweet = db.fetchTweet(tweetId);
+        if (tweet != null) {
+            System.out.println(tweet.toString());
+        }
     }
 
     /**

@@ -26,6 +26,7 @@ public class TweetDatabase {
     private SQLiteConnection db = null;
     private SQLiteStatement insertStatement = null;
     private SQLiteStatement selectStatement = null;
+    private SQLiteStatement fetchStatement = null;
     private SQLiteStatement existsStatement = null;
     private int tweetsImported;
     private int duplicates;
@@ -253,19 +254,8 @@ public class TweetDatabase {
         }
 
         if (rowReturned) {
-            tweet = new Tweet();
-            tweet.user = new User();
             try {
-                tweet.id = selectStatement.columnLong(0);
-                tweet.text = selectStatement.columnString(1);
-                tweet.created_at = selectStatement.columnString(2);
-                tweet.retweeted = selectStatement.columnInt(3) == 1;
-                tweet.retweet_count = selectStatement.columnLong(4);
-                tweet.favorited = selectStatement.columnInt(5) == 1;
-                tweet.user.id = selectStatement.columnLong(6);
-                tweet.user.screen_name = selectStatement.columnString(7);
-                tweet.user.name = selectStatement.columnString(8);
-                tweet.requested_id = selectStatement.columnLong(9);
+                tweet = rowToTweet(selectStatement);
             } catch (SQLiteException e) {
                 System.err.println("Error retrieving column values: " 
                         + e.getMessage());
@@ -279,6 +269,37 @@ public class TweetDatabase {
         }
 
         return tweet;
+    }
+
+    /**
+     * Fetch a tweet from the database by ID.
+     *
+     * @param id ID of the tweet to fetch
+     * @return The tweet, or null if it doesn't exist, or if there was an error
+     */
+    public Tweet fetchTweet(long id) {
+        try {
+            if (fetchStatement == null) {
+                fetchStatement = db.prepare(
+                        "select " +
+                        "id, text_, created_at, " +
+                        "retweeted, retweet_count, favorited, " +
+                        "user_id, user_screen_name, user_name, requested_id " +
+                        "from tweets where id = ? order by id");
+            } else {
+                fetchStatement.reset();
+            }
+            fetchStatement.bind(1, id);
+            if (fetchStatement.step()) {
+                return rowToTweet(fetchStatement);
+            } else {
+                System.err.println("Error: empty result");
+                return null;
+            }
+        } catch (SQLiteException e) {
+            System.err.println("Error fetching tweet: " + e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -306,5 +327,31 @@ public class TweetDatabase {
             System.err.println("Error: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Instantiate and populate a Tweet from a query result row.
+     *
+     * @param statement A statement with a row of data ready to be read
+     * @return A tweet populated with the data from the row
+     *
+     * @throws SQLiteException
+     */
+    private Tweet rowToTweet(SQLiteStatement statement) throws SQLiteException {
+        Tweet tweet = new Tweet();
+        tweet.user = new User();
+
+        tweet.id = statement.columnLong(0);
+        tweet.text = statement.columnString(1);
+        tweet.created_at = statement.columnString(2);
+        tweet.retweeted = statement.columnInt(3) == 1;
+        tweet.retweet_count = statement.columnLong(4);
+        tweet.favorited = statement.columnInt(5) == 1;
+        tweet.user.id = statement.columnLong(6);
+        tweet.user.screen_name = statement.columnString(7);
+        tweet.user.name = statement.columnString(8);
+        tweet.requested_id = statement.columnLong(9);
+
+        return tweet;
     }
 }
