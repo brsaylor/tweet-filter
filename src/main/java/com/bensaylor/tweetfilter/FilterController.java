@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -18,6 +19,20 @@ import java.util.TreeMap;
  * @author Ben Saylor
  */
 public class FilterController {
+
+    // There are two ways of iterating over all of the tweets for a topic.
+    // FETCHMODE_ALL iterates over all tweets in the database within the range
+    // defined by the topic. This necessarily results in low precision as
+    // calculated by the TREC evaluation scripts, which consider non-judged
+    // tweets to be nonrelevant.
+    // FETCHMODE_QRELS iterates over all of the judged tweets, avoiding this
+    // problem. Note that the filter itself still does not have access to the
+    // relevance judgment for a tweet until it has made a positive retrieval
+    // decision for that tweet.
+    private static final int FETCHMODE_ALL = 0;
+    private static final int FETCHMODE_QRELS = 1;
+    private int fetchMode = FETCHMODE_QRELS;
+
     private ArrayList<Topic> topics = null;
     private TweetDatabase db = null;
     private Filter filter = null;
@@ -134,11 +149,31 @@ public class FilterController {
         for (Topic topic : topics) {
             System.out.println("Running topic " + topic.number);
             filter.setTopic(topic);
-            db.startFromTweetId(topic.queryTweetTime);
-            Map<Long,Integer> topicJudgments = judgments.get(topic.number);
 
-            // Get the first tweet for the topic
-            Tweet tweet = db.next();
+            Tweet tweet = null;
+            Map<Long,Integer> topicJudgments = judgments.get(topic.number);
+            Iterator<Map.Entry<Long,Integer>> judgmentIterator = null;
+            Map.Entry<Long,Integer> judgment = null;
+
+            // See explanation given with the fetch mode variable declarations
+            switch (fetchMode) {
+                case FETCHMODE_QRELS:
+                    // Because topicJudgments is a TreeMap, the iterator returns
+                    // judgments in ascending order of tweet ID
+                    judgmentIterator = topicJudgments.entrySet().iterator();
+                    // Advance to the first tweet for the topic
+                    do {
+                        judgment = judgmentIterator.next();
+                    } while (judgment.getKey() < topic.queryTweetTime);
+                    tweet = db.fetchTweet(judgment.getKey());
+                    break;
+                case FETCHMODE_ALL:
+                default:
+                    db.startFromTweetId(topic.queryTweetTime);
+                    // Get the first tweet for the topic
+                    tweet = db.next();
+            }
+
             if (tweet == null || tweet.id != topic.queryTweetTime) {
                 System.err.println("Warning: topic " + topic.number +
                         ": oldest known relevant tweet is not in database");
@@ -162,7 +197,21 @@ public class FilterController {
                         filter.feedback(tweet, relevance);
                     }
                 }
-                tweet = db.next();
+
+                // Fetch the next tweet
+                switch (fetchMode) {
+                    case FETCHMODE_QRELS:
+                        if (judgmentIterator.hasNext()) {
+                            judgment = judgmentIterator.next();
+                            tweet = db.fetchTweet(judgment.getKey());
+                        } else {
+                            tweet = null;
+                        }
+                        break;
+                    case FETCHMODE_ALL:
+                    default:
+                        tweet = db.next();
+                }
             }
         }
 
