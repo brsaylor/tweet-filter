@@ -29,9 +29,12 @@ public class FilterController {
     // problem. Note that the filter itself still does not have access to the
     // relevance judgment for a tweet until it has made a positive retrieval
     // decision for that tweet.
+    // * UPDATE: FETCHMODE_ALL seems to be the correct one to use. The 2012
+    //   guidelines state that the system should be provided a relevance value
+    //   of 0 for a retreived, unjudged tweet.
     private static final int FETCHMODE_ALL = 0;
     private static final int FETCHMODE_QRELS = 1;
-    private int fetchMode = FETCHMODE_QRELS;
+    private int fetchMode = FETCHMODE_ALL;
 
     private ArrayList<Topic> topics = null;
     private TweetDatabase db = null;
@@ -192,10 +195,14 @@ public class FilterController {
                             tweet.id,
                             decision.score,
                             runTag);
+                    int relevance;
                     if (topicJudgments.containsKey(tweet.id)) {
-                        int relevance = topicJudgments.get(tweet.id);
-                        filter.feedback(tweet, relevance);
+                        relevance = topicJudgments.get(tweet.id);
+                    } else {
+                        // Treat unjudged tweets as nonrelevant
+                        relevance = 0;
                     }
+                    filter.feedback(tweet, relevance);
                 }
 
                 // Fetch the next tweet
