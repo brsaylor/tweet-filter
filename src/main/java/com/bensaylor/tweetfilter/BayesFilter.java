@@ -10,14 +10,19 @@ import weka.core.Instances;
 
 public class BayesFilter extends Filter {
 
-    NaiveBayesMultinomialText classifier;
-    Instances instances;
-    int numRelevantExamples;
-    int numNonRelevantExamples;
+    private NaiveBayesMultinomialText classifier;
+    private Instances instances;
+    private int numRelevantExamples;
+    private int numNonRelevantExamples;
+
+    private double queryWeight = 4.0;
+    private double[] relevanceWeights = {2.0, 1.0, 2.0};
 
     @Override
     public void setTopic(Topic topic) {
         classifier = new NaiveBayesMultinomialText();
+
+        classifier.setLowercaseTokens(true);
 
         ArrayList<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("text", (ArrayList<String>) null));
@@ -36,6 +41,13 @@ public class BayesFilter extends Filter {
             classifier.buildClassifier(instances);
         } catch (Exception e) {
             System.err.println("Error building classifier: " + e.getMessage());
+        }
+
+        Instance queryInstance = makeQueryInstance(topic.title);
+        try {
+            classifier.updateClassifier(queryInstance);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
         }
     }
 
@@ -75,11 +87,9 @@ public class BayesFilter extends Filter {
         } catch (Exception e) {
             System.err.println("Error updating classifier: " + e.getMessage());
         }
-        System.out.println("numRelevantExamples = " + numRelevantExamples);
-        System.out.println("numNonRelevantExamples = " + numNonRelevantExamples);
     }
 
-    public Instance makeInstance(Tweet tweet, int relevance) {
+    private Instance makeInstance(Tweet tweet, int relevance) {
         double[] values = new double[instances.numAttributes()];
         values[0] = instances.attribute(0).addStringValue(tweet.text);
         if (relevance >= Constants.MINREL) {
@@ -87,7 +97,17 @@ public class BayesFilter extends Filter {
         } else {
             values[1] = 0.0;
         }
-        Instance instance = new DenseInstance(1.0, values);
+        double weight = relevanceWeights[Math.max(0, relevance)];
+        Instance instance = new DenseInstance(weight, values);
+        instance.setDataset(instances);
+        return instance;
+    }
+
+    private Instance makeQueryInstance(String query) {
+        double[] values = new double[instances.numAttributes()];
+        values[0] = instances.attribute(0).addStringValue(query);
+        values[1] = 1.0;
+        Instance instance = new DenseInstance(queryWeight, values);
         instance.setDataset(instances);
         return instance;
     }
