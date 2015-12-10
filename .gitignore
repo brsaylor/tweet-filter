@@ -4,3 +4,6 @@ build/
 .settings/
 workbench.xmi
 data/
+output/
+evaluation/
+.DS_Store
