@@ -152,6 +152,7 @@ public class FilterController {
         for (Topic topic : topics) {
             System.out.println("Running topic " + topic.number);
             filter.setTopic(topic);
+            int[] feedbackCountByRelevance = new int[Constants.MAXREL + 1];
 
             Tweet tweet = null;
             Map<Long,Integer> topicJudgments = judgments.get(topic.number);
@@ -203,6 +204,7 @@ public class FilterController {
                         relevance = 0;
                     }
                     filter.feedback(tweet, relevance);
+                    feedbackCountByRelevance[Math.max(0, relevance)]++;
                 }
 
                 // Fetch the next tweet
@@ -220,6 +222,12 @@ public class FilterController {
                         tweet = db.next();
                 }
             }
+
+            System.out.print("Feedback count by relevance:  ");
+            for (int i = 0; i < feedbackCountByRelevance.length; i++) {
+                System.out.print(i + ": " + feedbackCountByRelevance[i] + "  ");
+            }
+            System.out.println();
         }
 
         writer.close();
@@ -250,6 +258,32 @@ public class FilterController {
 
                     writer.printf("%d 0 %d %d\n",
                             topicNumber, tweetId, relevance);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error writing qrels file: " + e.getMessage());
+        }
+    }
+
+    public void writeRelevantTweets(String filename) {
+        try (PrintWriter writer = new PrintWriter(filename)) {
+
+            for (Topic topic : topics) {
+
+                writer.println("=============================================");
+                writer.println("Topic " + topic.number + ": " + topic.title);
+                writer.println("---------------------------------------------");
+
+                Map<Long,Integer> topicJudgments = judgments.get(topic.number);
+
+                // Print all relevant tweets
+                for (Map.Entry<Long,Integer> judgment
+                        : topicJudgments.entrySet()) {
+                    if (judgment.getValue() >= Constants.MINREL) {
+                        Tweet tweet = db.fetchTweet(judgment.getKey());
+                        writer.println("RELEVANCE = " + judgment.getValue());
+                        writer.println(tweet.toString());
+                    }
                 }
             }
         } catch (Exception e) {

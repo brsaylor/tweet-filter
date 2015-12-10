@@ -65,6 +65,13 @@ public class Main {
             } else if (args[0].equals("showtopics")) {
                 showtopics();
 
+            } else if (args[0].equals("writeRelevantTweets")) {
+                if (args.length < 2) {
+                    printUsage();
+                } else {
+                    writeRelevantTweets(args[1]);
+                }
+
             } else if (args[0].equals("writeqrels")) {
                 if (args.length < 2) {
                     printUsage();
@@ -117,6 +124,9 @@ public class Main {
 
         System.err.println("showtopics\n"
                 + "  Show the list of training topics\n");
+
+        System.err.println("writeRelevantTweets <filename>\n"
+                + "  Output the relevant tweets for each topic\n");
 
         System.err.println("writeqrels <filename>\n"
                 + "  Write the training qrels to the given file"
@@ -229,6 +239,20 @@ public class Main {
         for (Topic topic : topics) {
             System.out.println(topic.toString());
         }
+    }
+
+    /**
+     * Command: Output the list of relevant tweets.
+     */
+    public static void writeRelevantTweets(String filename) {
+        db = new TweetDatabase(dbfile);
+        FilterController controller = new FilterController();
+        controller.setDatabase(db);
+        controller.readTopics(controller.getClass().getResourceAsStream(
+                    trainingTopicsFile));
+        controller.readQrels(controller.getClass().getResourceAsStream(
+                    trainingQrelsFile));
+        controller.writeRelevantTweets(filename);
     }
 
     /**
