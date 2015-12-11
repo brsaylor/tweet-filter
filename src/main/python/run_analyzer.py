@@ -76,7 +76,8 @@ if __name__ == '__main__':
     runFile.close()
 
     outputFile = open(outputFilename, 'w')
-    fieldnames = ['topic', 'tweetId', 'status', 'text']
+    fieldnames = ['topic', 'tweetId', 'status', 'text', 'retweeted',
+            'retweet_count', 'favorited', 'user_screen_name', 'user_name']
     writer = csv.DictWriter(outputFile, fieldnames)
     writer.writeheader()
     
@@ -96,5 +97,10 @@ if __name__ == '__main__':
                     'tweetId': tweetId,
                     'status': status,
                     'text': tweet['text_'],
+                    'retweeted': tweet['retweeted'],
+                    'retweet_count': tweet['retweet_count'],
+                    'favorited': tweet['favorited'],
+                    'user_screen_name': tweet['user_screen_name'],
+                    'user_name': tweet['user_name'],
                     })
     outputFile.close()
