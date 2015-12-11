@@ -61,11 +61,7 @@ public class QueryFilter extends Filter {
             return new FilterDecision(tweet.id, 0.0, false);
         }
 
-        // Try to exclude most non-English tweets by filtering out non-ASCII
-        // First, preprocess to remove some non-ASCII chars that sometimes occur
-        // in English
-        String s = tweet.text.replaceAll("[" + allowedNonAsciiChars + "]", " ");
-        if (!asciiEncoder.canEncode(s)) {
+        if (hasNonEnglishChars(tweet)) {
             return new FilterDecision(tweet.id, 0.0, false);
         }
 
@@ -91,10 +87,17 @@ public class QueryFilter extends Filter {
         return new FilterDecision(tweet.id, score, retrieve);
     }
 
-    private String normalize(String term) {
+    protected String normalize(String term) {
         stemmer.setCurrent(term.toLowerCase());
         stemmer.stem();
         return stemmer.getCurrent();
     }
 
+    // Try to exclude most non-English tweets by filtering out non-ASCII
+    // First, preprocess to remove some non-ASCII chars that sometimes occur
+    // in English
+    protected boolean hasNonEnglishChars(Tweet tweet) {
+        String s = tweet.text.replaceAll("[" + allowedNonAsciiChars + "]", " ");
+        return !asciiEncoder.canEncode(s);
+    }
 }

@@ -182,6 +182,8 @@ public class Main {
             filter = new BayesFilter();
         } else if (filterName.equals("query")) {
             filter = new QueryFilter();
+        } else if (filterName.equals("feedback")) {
+            filter = new FeedbackFilter();
         } else {
             printUsage();
             return;
