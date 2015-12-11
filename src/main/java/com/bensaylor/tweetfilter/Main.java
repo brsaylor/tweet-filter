@@ -180,6 +180,8 @@ public class Main {
             filter = new BooleanOrFilter();
         } else if (filterName.equals("bayes")) {
             filter = new BayesFilter();
+        } else if (filterName.equals("query")) {
+            filter = new QueryFilter();
         } else {
             printUsage();
             return;
