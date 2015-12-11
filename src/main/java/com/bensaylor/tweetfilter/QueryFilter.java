@@ -1,14 +1,16 @@
 package com.bensaylor.tweetfilter;
 
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import weka.core.tokenizers.WordTokenizer;
 
 // Using org.tartarus.snowball directly instead of
 // weka.core.stemmers.SnowballStemmer, which causes java.util.zip.ZipException
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.porterStemmer;
+
+import weka.core.tokenizers.WordTokenizer;
 
 /**
  * Simple query-based filter
@@ -20,10 +22,24 @@ public class QueryFilter extends Filter {
     private WordTokenizer tokenizer;
     private SnowballStemmer stemmer;
     private HashSet<String> query;
+    private CharsetEncoder asciiEncoder;
+    private String allowedNonAsciiChars;
 
     public QueryFilter() {
         tokenizer = new WordTokenizer();
         stemmer = new porterStemmer();
+        asciiEncoder = Charset.forName("US-ASCII").newEncoder();
+
+        allowedNonAsciiChars = new StringBuilder()
+            .append("\u00a0") // non-breaking space
+            .append("\u2018") // left single quote
+            .append("\u2019") // right single quote
+            .append("\u201C") // left double quote
+            .append("\u201D") // right double quote
+            .append("\u2026") // horizontal ellipsis
+            .append("\u2013") // en dash
+            .append("\u2014") // em dash
+            .toString();
     }
 
     @Override
@@ -42,6 +58,14 @@ public class QueryFilter extends Filter {
         // training set. "RT" typically indicates a retweet with no information
         // beyond the original tweet.
         if (tweet.text.startsWith("RT")) {
+            return new FilterDecision(tweet.id, 0.0, false);
+        }
+
+        // Try to exclude most non-English tweets by filtering out non-ASCII
+        // First, preprocess to remove some non-ASCII chars that sometimes occur
+        // in English
+        String s = tweet.text.replaceAll("[" + allowedNonAsciiChars + "]", " ");
+        if (!asciiEncoder.canEncode(s)) {
             return new FilterDecision(tweet.id, 0.0, false);
         }
 
