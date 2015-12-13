@@ -27,12 +27,34 @@ public class Main {
         "/2012.topics.MB1-50.filtering.training.pruned.txt";
     final private static String trainingQrelsFile =
         "/filtering-qrels.training.pruned";
+    final private static String testTopicsFile =
+        "/2012.topics.MB1-50.filtering.test.pruned.txt";
+    final private static String testQrelsFile =
+        "/filtering-qrels.test.pruned";
 
     private static TweetDatabase db = null;
+
+    private static String topicsFile = trainingTopicsFile;
+    private static String qrelsFile = trainingQrelsFile;
 
     public static void main(String[] args) {
 
         if (args.length > 0) {
+
+            // Get pre-command options
+            if (args[0].equals("-test")) {
+                if (args.length < 2) {
+                    printUsage();
+                    return;
+                }
+                topicsFile = testTopicsFile;
+                qrelsFile = testQrelsFile;
+                String[] newArgs = new String[args.length - 1];
+                for (int i = 1; i < args.length; i++) {
+                    newArgs[i-1] = args[i];
+                }
+                args = newArgs;
+            }
 
             if (args[0].equals("createdb")) {
                 if (args.length < 2) {
@@ -98,7 +120,7 @@ public class Main {
      * Print out the help text.
      */
     public static void printUsage() {
-        System.err.println("\nUsage: tweet-filter <command> [arguments]\n");
+        System.err.println("\nUsage: tweet-filter [-test] <command> [arguments]\n");
         System.err.println("Commands:\n");
 
         System.err.println("createdb <input-list-file>\n"
@@ -106,7 +128,7 @@ public class Main {
                 + " into ./data/tweets.sqlite\n");
 
         System.err.println("run <filter> <run-tag> <output-file>\n"
-                + "  Run the given filter with the training topics"
+                + "  Run the given filter with the training/test topics"
                 + " and write the results to <output-file>"
                 + " including the given <run-tag>.\n"
                 + "  Available filters:\n"
@@ -123,13 +145,13 @@ public class Main {
                 + " starting from the given ID (no filtering)\n");
 
         System.err.println("showtopics\n"
-                + "  Show the list of training topics\n");
+                + "  Show the list of training/test topics\n");
 
         System.err.println("writeRelevantTweets <filename>\n"
                 + "  Output the relevant tweets for each topic\n");
 
         System.err.println("writeqrels <filename>\n"
-                + "  Write the training qrels to the given file"
+                + "  Write the training/test qrels to the given file"
                 + " (mostly for testing that they were read correctly)\n");
 
         System.err.println("pruneqrels <infile> <outfile>\n"
@@ -166,7 +188,7 @@ public class Main {
     }
 
     /**
-     * Command: Run the given filter on all training topics.
+     * Command: Run the given filter on all training/test topics.
      *
      * @param filterName Name of the filter to run (see program usage message)
      * @param runTag String to include at end of each output line
@@ -193,9 +215,9 @@ public class Main {
         controller.setDatabase(db);
         controller.setFilter(filter);
         controller.readTopics(controller.getClass().getResourceAsStream(
-                    trainingTopicsFile));
+                    topicsFile));
         controller.readQrels(controller.getClass().getResourceAsStream(
-                    trainingQrelsFile));
+                    qrelsFile));
         controller.run(runTag, outputFile);
     }
 
@@ -238,7 +260,7 @@ public class Main {
     public static void showtopics() {
         TopicsFileParser parser = new TopicsFileParser();
         InputStream inputStream = parser.getClass()
-            .getResourceAsStream(trainingTopicsFile);
+            .getResourceAsStream(topicsFile);
         ArrayList<Topic> topics = parser.parseTopics(inputStream);
         for (Topic topic : topics) {
             System.out.println(topic.toString());
@@ -253,9 +275,9 @@ public class Main {
         FilterController controller = new FilterController();
         controller.setDatabase(db);
         controller.readTopics(controller.getClass().getResourceAsStream(
-                    trainingTopicsFile));
+                    topicsFile));
         controller.readQrels(controller.getClass().getResourceAsStream(
-                    trainingQrelsFile));
+                    qrelsFile));
         controller.writeRelevantTweets(filename);
     }
 
@@ -267,7 +289,7 @@ public class Main {
     public static void writeqrels(String filename) {
         FilterController controller = new FilterController();
         InputStream inputStream = controller.getClass()
-            .getResourceAsStream(trainingQrelsFile);
+            .getResourceAsStream(qrelsFile);
         controller.readQrels(inputStream);
         controller.writeQrels(filename);
     }
