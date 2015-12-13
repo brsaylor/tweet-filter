@@ -10,6 +10,7 @@ src/main/resources/2012.topics.MB1-50.filtering.training.[pruned].txt.
 """
 
 oldestByTopic = {}
+relevantCountByTopic = {}
 
 with open(sys.argv[1]) as f:
     for line in f:
@@ -18,8 +19,12 @@ with open(sys.argv[1]) as f:
         id = int(tokens[2])
         rel = int(tokens[3])
         if rel > 0:
-            if id not in oldestByTopic or id < oldestByTopic[topic]:
+            if topic not in oldestByTopic or id < oldestByTopic[topic]:
                 oldestByTopic[topic] = id
+            if topic not in relevantCountByTopic:
+                relevantCountByTopic[topic] = 1
+            else:
+                relevantCountByTopic[topic] += 1
 
 for topic, id in sorted(oldestByTopic.items()):
-    print((topic, id))
+    print(str((topic, id)) + ", " + str(relevantCountByTopic[topic]) + " relevant")
