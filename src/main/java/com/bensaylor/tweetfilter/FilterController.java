@@ -220,6 +220,10 @@ public class FilterController {
                     feedbackCountByRelevance[Math.max(0, relevance)]++;
                 }
 
+                writer.flush();
+                if (log != null)
+                    log.flush();
+
                 // Fetch the next tweet
                 switch (fetchMode) {
                     case FETCHMODE_QRELS:

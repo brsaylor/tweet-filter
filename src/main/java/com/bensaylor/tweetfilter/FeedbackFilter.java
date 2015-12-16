@@ -1,5 +1,8 @@
 package com.bensaylor.tweetfilter;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +14,7 @@ import weka.core.tokenizers.WordTokenizer;
  * @author Ben Sayor
  */
 public class FeedbackFilter extends QueryFilter {
+
 
     private WordTokenizer tokenizer;
     private HashMap<String,Double> origQuery;
@@ -120,6 +124,10 @@ public class FeedbackFilter extends QueryFilter {
             }
         }
 
+        if (log != null) {
+            logExpandedQuery();
+        }
+
         // Calculate total weight for normalization
         expandedTotalWeight = 0;
         for (double w : expandedQuery.values()) {
@@ -143,5 +151,35 @@ public class FeedbackFilter extends QueryFilter {
             existingWeight = new Double(0);
         }
         vec.put(term, existingWeight + weight);
+    }
+
+    private void logExpandedQuery() {
+
+        // Sort the vector entries by descending term weight, then term
+        ArrayList<Map.Entry<String,Double>> entries
+            = new ArrayList<Map.Entry<String,Double>>(expandedQuery.entrySet());
+        Collections.sort(entries, new TermVectorComparator());
+        
+        log.println("Expanded query:");
+        for (Map.Entry<String,Double> entry : entries) {
+            log.printf("%12s\t%2.4f\n", entry.getKey(), entry.getValue());
+        }
+    }
+
+    // Allows sorting term vectors by descending term weight, then term
+    private class TermVectorComparator
+            implements Comparator<Map.Entry<String,Double>> {
+        
+        public int compare(Map.Entry<String,Double> entry1,
+                Map.Entry<String,Double> entry2) {
+
+            if (entry1.getValue() > entry2.getValue()) {
+                return -1;
+            } else if (entry1.getValue() < entry2.getValue()) {
+                return 1;
+            } else {
+                return entry1.getKey().compareTo(entry2.getKey());
+            }
+        }
     }
 }
