@@ -134,8 +134,9 @@ public class FilterController {
      *
      * @param runTag A label identifying this run, to be included in the output
      * @param outputFile Name of the output file
+     * @param logFile Name of the log file, or null to disable logging
      */
-    public void run(String runTag, String outputFile) {
+    public void run(String runTag, String outputFile, String logFile) {
         assert topics != null;
         assert judgments != null;
         assert db != null;
@@ -148,6 +149,18 @@ public class FilterController {
             System.err.println("Error opening output file: " + e.getMessage());
             return;
         }
+
+        PrintWriter log = null;
+        if (logFile != null) {
+            try {
+                log = new PrintWriter(logFile);
+            } catch (FileNotFoundException e) {
+                System.err.println("Error opening log file: " + e.getMessage());
+                writer.close();
+                return;
+            }
+        }
+        filter.setLog(log);
 
         for (Topic topic : topics) {
             System.out.println("Running topic " + topic.number);
@@ -231,6 +244,9 @@ public class FilterController {
         }
 
         writer.close();
+        if (log!= null) {
+            log.close();
+        }
     }
 
     /**

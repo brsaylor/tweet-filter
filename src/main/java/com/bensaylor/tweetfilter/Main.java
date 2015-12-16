@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -36,25 +37,29 @@ public class Main {
 
     private static String topicsFile = trainingTopicsFile;
     private static String qrelsFile = trainingQrelsFile;
+    private static String logFile = null;
 
     public static void main(String[] args) {
 
-        if (args.length > 0) {
-
-            // Get pre-command options
-            if (args[0].equals("-test")) {
-                if (args.length < 2) {
+        // Get pre-command options
+        int i;
+        for (i = 0; i < args.length && args[i].startsWith("-"); i++) {
+            String option = args[i];
+            if (option.equals("-test")) {
+                topicsFile = testTopicsFile;
+                qrelsFile = testQrelsFile;
+            } else if (option.equals("-log")) {
+                i++;
+                if (i >= args.length) {
                     printUsage();
                     return;
                 }
-                topicsFile = testTopicsFile;
-                qrelsFile = testQrelsFile;
-                String[] newArgs = new String[args.length - 1];
-                for (int i = 1; i < args.length; i++) {
-                    newArgs[i-1] = args[i];
-                }
-                args = newArgs;
+                logFile = args[i];
             }
+        }
+        args = Arrays.copyOfRange(args, i, args.length);
+
+        if (args.length > 0) {
 
             if (args[0].equals("createdb")) {
                 if (args.length < 2) {
@@ -120,7 +125,7 @@ public class Main {
      * Print out the help text.
      */
     public static void printUsage() {
-        System.err.println("\nUsage: tweet-filter [-test] <command> [arguments]\n");
+        System.err.println("\nUsage: tweet-filter [-test] [-log <logfile>] <command> [arguments]\n");
         System.err.println("Commands:\n");
 
         System.err.println("createdb <input-list-file>\n"
@@ -134,6 +139,8 @@ public class Main {
                 + "  Available filters:\n"
                 + "    baseline: classifies all tweets as relevant\n"
                 + "    boolean-or: retrieves tweets with any of the terms in the query\n"
+                + "    query: filter using query-based scoring only (no feedback)\n"
+                + "    feedback: adds feedback to 'query' filter using Rocchio algorithm\n"
                 + "    bayes: naive Bayes filter\n"
                 );
 
@@ -218,7 +225,7 @@ public class Main {
                     topicsFile));
         controller.readQrels(controller.getClass().getResourceAsStream(
                     qrelsFile));
-        controller.run(runTag, outputFile);
+        controller.run(runTag, outputFile, logFile);
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.bensaylor.tweetfilter;
 
+import java.io.PrintWriter;
+
 /**
  * Baseline tweet filter.
  * This filter classifies all tweets as relevant, with a score of 1.0.
@@ -8,6 +10,8 @@ package com.bensaylor.tweetfilter;
  * @author Ben Sayor
  */
 public class Filter {
+
+    protected PrintWriter log = null;
 
     /**
      * Reset the filter and initialize it for a new topic.
@@ -39,5 +43,14 @@ public class Filter {
      * @see Constants
      */
     public void feedback(Tweet tweet, int relevance) {
+    }
+
+    /**
+     * Set the PrintWriter to be used for logging.
+     *
+     * @param logWriter The PrintWriter to use for logging
+     */
+    public void setLog(PrintWriter log) {
+        this.log = log;
     }
 }
