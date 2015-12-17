@@ -64,6 +64,7 @@ if __name__ == '__main__':
 
     # Read runfile into memory
     runData = {}
+    scores = {} # scores indexed by (topicNumber, tweetId) tuples
     if runFilename.endswith('.gz'):
         runFile = gzip.open(runFilename, 'rt')
     else:
@@ -74,13 +75,15 @@ if __name__ == '__main__':
             continue
         topicNumber = int(tokens[0][2:])
         tweetId = int(tokens[1])
+        score = tokens[2]  # keep as string to preserve formatting
         if topicNumber not in runData:
             runData[topicNumber] = set()
         runData[topicNumber].add(tweetId)
+        scores[(topicNumber, tweetId)] = score
     runFile.close()
 
     outputFile = open(outputFilename, 'w')
-    fieldnames = ['topic', 'tweetId', 'status', 'text', 'retweeted',
+    fieldnames = ['topic', 'tweetId', 'status', 'score', 'text', 'retweeted',
             'retweet_count', 'favorited', 'user_screen_name', 'user_name']
     writer = csv.DictWriter(outputFile, fieldnames)
     writer.writeheader()
@@ -100,6 +103,7 @@ if __name__ == '__main__':
                     'topic': topicNumber,
                     'tweetId': tweetId,
                     'status': status,
+                    'score': scores.get((topicNumber, tweetId), ''),
                     'text': tweet['text_'],
                     'retweeted': tweet['retweeted'],
                     'retweet_count': tweet['retweet_count'],
