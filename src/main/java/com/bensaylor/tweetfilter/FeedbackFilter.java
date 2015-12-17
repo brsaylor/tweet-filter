@@ -1,9 +1,11 @@
 package com.bensaylor.tweetfilter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import weka.core.tokenizers.WordTokenizer;
@@ -24,9 +26,14 @@ public class FeedbackFilter extends QueryFilter {
     private double alpha, beta, gamma; // Rocchio parameters
     private double expandedTotalWeight; // Total weight of expanded query
     private double scoreThreshold;
+    private HashSet<String> stopwords;
 
     public FeedbackFilter() {
         tokenizer = new WordTokenizer();
+        stopwords = new HashSet<>();
+        String[] stopwordsArray = {
+            "the", "is", "at", "of", "on", "and", "a", "to"};
+        stopwords.addAll(Arrays.asList(stopwordsArray));
 
         // Tuning parameters
         alpha = 1;
@@ -42,7 +49,9 @@ public class FeedbackFilter extends QueryFilter {
         origQuery = new HashMap<String,Double>();
         tokenizer.tokenize(topic.title);
         while (tokenizer.hasMoreElements()) {
-            origQuery.put(normalize(tokenizer.nextElement()), 1.0);
+            String term = normalize(tokenizer.nextElement());
+            if (!isStopword(term))
+                origQuery.put(term, 1.0);
         }
 
         relDocSum = new HashMap<String,Double>();
@@ -75,7 +84,7 @@ public class FeedbackFilter extends QueryFilter {
         double score = 0.0;
         while (tokenizer.hasMoreElements()) {
             String term = normalize(tokenizer.nextElement());
-            if (expandedQuery.containsKey(term)) {
+            if (!isStopword(term) && expandedQuery.containsKey(term)) {
                 score += expandedQuery.get(term);
             }
         }
@@ -94,7 +103,8 @@ public class FeedbackFilter extends QueryFilter {
             // Update relevant tweet vector
             while (tokenizer.hasMoreElements()) {
                 String term = normalize(tokenizer.nextElement());
-                addTermToVector(relDocSum, term, 1);
+                if (!isStopword(term))
+                    addTermToVector(relDocSum, term, 1);
             }
             relDocCount++;
 
@@ -103,7 +113,8 @@ public class FeedbackFilter extends QueryFilter {
             // Update non-relevant tweet vector
             while (tokenizer.hasMoreElements()) {
                 String term = normalize(tokenizer.nextElement());
-                addTermToVector(nonrelDocSum, term, 1);
+                if (!isStopword(term))
+                    addTermToVector(nonrelDocSum, term, 1);
             }
             nonrelDocCount++;
         }
@@ -155,9 +166,17 @@ public class FeedbackFilter extends QueryFilter {
 
     // Perform pre-tokenization processing
     private String preprocessText(String text) {
-        // Replace links with "http"
-        String processed = text.replaceAll("http\\S+", "http");
+        String processed = text
+            .replaceAll("http\\S+", "http") // Replace links with "http"
+            .replaceAll("\\p{Punct}", " "); // Replace punctuation with space
         return processed;
+    }
+
+    private boolean isStopword(String token) {
+        if (token.length() <= 1) {
+            return true;
+        }
+        return stopwords.contains(token);
     }
 
     private void logExpandedQuery() {
