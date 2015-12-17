@@ -12,6 +12,7 @@ negatives.
 import sys
 import sqlite3
 import csv
+import gzip
 
 conn = None
 cursor = None
@@ -63,7 +64,10 @@ if __name__ == '__main__':
 
     # Read runfile into memory
     runData = {}
-    runFile = open(runFilename, 'r')
+    if runFilename.endswith('.gz'):
+        runFile = gzip.open(runFilename, 'rt')
+    else:
+        runFile = open(runFilename, 'r')
     for line in runFile:
         tokens = line.split()
         if tokens[3] != 'yes':
