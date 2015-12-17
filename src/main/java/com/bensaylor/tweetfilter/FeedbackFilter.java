@@ -70,7 +70,7 @@ public class FeedbackFilter extends QueryFilter {
             return new FilterDecision(tweet.id, 0.0, false);
         }
 
-        tokenizer.tokenize(tweet.text);
+        tokenizer.tokenize(preprocessText(tweet.text));
 
         double score = 0.0;
         while (tokenizer.hasMoreElements()) {
@@ -87,7 +87,7 @@ public class FeedbackFilter extends QueryFilter {
     @Override
     public void feedback(Tweet tweet, int relevance) {
 
-        tokenizer.tokenize(tweet.text);
+        tokenizer.tokenize(preprocessText(tweet.text));
 
         if (relevance >= Constants.MINREL) {
 
@@ -151,6 +151,13 @@ public class FeedbackFilter extends QueryFilter {
             existingWeight = new Double(0);
         }
         vec.put(term, existingWeight + weight);
+    }
+
+    // Perform pre-tokenization processing
+    private String preprocessText(String text) {
+        // Replace links with "http"
+        String processed = text.replaceAll("http\\S+", "http");
+        return processed;
     }
 
     private void logExpandedQuery() {
