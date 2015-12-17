@@ -16,7 +16,7 @@ public class BayesFilter extends Filter {
     private int numNonRelevantExamples;
 
     private double queryWeight = 4.0;
-    private double[] relevanceWeights = {2.0, 1.0, 2.0};
+    //private double[] relevanceWeights = {2.0, 1.0, 2.0};
 
     @Override
     public void setTopic(Topic topic) {
@@ -91,13 +91,31 @@ public class BayesFilter extends Filter {
 
     private Instance makeInstance(Tweet tweet, int relevance) {
         double[] values = new double[instances.numAttributes()];
+        //double weight = relevanceWeights[Math.max(0, relevance)];
+        double weight;
         values[0] = instances.attribute(0).addStringValue(tweet.text);
         if (relevance >= Constants.MINREL) {
             values[1] = 1.0;
+            // To prevent class skew, weight by the ratio of nonrelevant
+            // instances to relevant instances
+            if (numRelevantExamples + numNonRelevantExamples > 1)
+                weight = numNonRelevantExamples / (double) numRelevantExamples;
+            else
+                weight = 1.0;
         } else {
             values[1] = 0.0;
+            // To prevent class skew, weight by the ratio of relevant
+            // instances to nonrelevant instances
+            if (numRelevantExamples + numNonRelevantExamples > 1)
+                weight = numRelevantExamples / (double) numNonRelevantExamples;
+            else
+                weight = 1.0;
         }
-        double weight = relevanceWeights[Math.max(0, relevance)];
+
+        // Prevent too-high or too-low weights
+        if (weight < 0.25) weight = 0.25;
+        if (weight > 4) weight = 4;
+
         Instance instance = new DenseInstance(weight, values);
         instance.setDataset(instances);
         return instance;
