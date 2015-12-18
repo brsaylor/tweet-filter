@@ -11,7 +11,7 @@ import java.util.Map;
 import weka.core.tokenizers.WordTokenizer;
 
 /**
- * Filter incorporating relevance feedback using the Rocchio algorithm
+ * Filter incorporating relevance feedback using the Rocchio algorithm.
  *
  * @author Ben Sayor
  */
@@ -146,6 +146,8 @@ public class FeedbackFilter extends QueryFilter {
         }
     }
 
+    // Add the term vector 'vecToAdd' to the term vector 'vec' with the given
+    // weight
     private void addToVector(
             HashMap<String,Double> vec,
             HashMap<String,Double> vecToAdd,
@@ -155,6 +157,7 @@ public class FeedbackFilter extends QueryFilter {
         }
     }
 
+    // Add a term to the given term vector with the given weight
     private void addTermToVector(HashMap<String,Double> vec, String term,
             double weight) {
         Double existingWeight = vec.get(term);
@@ -179,6 +182,7 @@ public class FeedbackFilter extends QueryFilter {
         return stopwords.contains(token);
     }
 
+    // Output the Rocchio-expanded query to the log file
     private void logExpandedQuery() {
 
         // Sort the vector entries by descending term weight, then term

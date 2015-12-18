@@ -13,7 +13,10 @@ import org.tartarus.snowball.ext.porterStemmer;
 import weka.core.tokenizers.WordTokenizer;
 
 /**
- * Simple query-based filter
+ * Simple query-based filter.
+ *
+ * Tweets are scored based on the number of normalized terms they share with the
+ * query, and retrieved if the score exceeds a threshold.
  *
  * @author Ben Sayor
  */
@@ -94,9 +97,9 @@ public class QueryFilter extends Filter {
     }
 
     // Try to exclude most non-English tweets by filtering out non-ASCII
-    // First, preprocess to remove some non-ASCII chars that sometimes occur
-    // in English
     protected boolean hasNonEnglishChars(Tweet tweet) {
+        // First, preprocess to remove some non-ASCII chars that sometimes occur
+        // in English
         String s = tweet.text.replaceAll("[" + allowedNonAsciiChars + "]", " ");
         return !asciiEncoder.canEncode(s);
     }

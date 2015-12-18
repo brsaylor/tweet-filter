@@ -125,7 +125,10 @@ public class Main {
      * Print out the help text.
      */
     public static void printUsage() {
-        System.err.println("\nUsage: tweet-filter [-test] [-log <logfile>] <command> [arguments]\n");
+        System.err.println("\nUsage: tweet-filter [-test] [-log <logfile>] <command> [arguments]");
+        System.err.println("  -test: use the test topics (otherwise, training topics will be used");
+        System.err.println("  -log <logfile>: log filter messages to the given file");
+        System.err.println();
         System.err.println("Commands:\n");
 
         System.err.println("createdb <input-list-file>\n"

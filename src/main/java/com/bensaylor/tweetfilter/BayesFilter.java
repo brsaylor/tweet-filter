@@ -8,13 +8,22 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
+/**
+ * Filters tweets based on a Bayesian multinomial text classifier.
+ *
+ * @author Ben Saylor (brsaylor@gmail.com)
+ */
 public class BayesFilter extends Filter {
 
     private NaiveBayesMultinomialText classifier;
     private Instances instances;
+
+    // Number of relevant and nonrelevant examples provided to the filter via
+    // the feedback() method
     private int numRelevantExamples;
     private int numNonRelevantExamples;
 
+    // Weight of training instances
     private double queryWeight = 4.0;
     private double[] relevanceWeights = {2.0, 1.0, 2.0};
 
@@ -24,13 +33,13 @@ public class BayesFilter extends Filter {
 
         classifier.setLowercaseTokens(true);
 
+        // Set up the classifier's dataset
         ArrayList<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("text", (ArrayList<String>) null));
         ArrayList<String> labels = new ArrayList<>();
         labels.add("nonrelevant");
         labels.add("relevant");
         attributes.add(new Attribute("relevance", labels));
-
         instances = new Instances("tweets", attributes, 0);
         instances.setClassIndex(attributes.size() - 1);
 
@@ -43,6 +52,7 @@ public class BayesFilter extends Filter {
             System.err.println("Error building classifier: " + e.getMessage());
         }
 
+        // Initialize the classifier with the query
         Instance queryInstance = makeQueryInstance(topic.title);
         try {
             classifier.updateClassifier(queryInstance);
@@ -89,6 +99,7 @@ public class BayesFilter extends Filter {
         }
     }
 
+    // Given a tweet, return a Weka instance that the classifier can use
     private Instance makeInstance(Tweet tweet, int relevance) {
         double[] values = new double[instances.numAttributes()];
         values[0] = instances.attribute(0).addStringValue(tweet.text);
@@ -103,6 +114,7 @@ public class BayesFilter extends Filter {
         return instance;
     }
 
+    // Given the query, return a Weka instance that the classifier can use
     private Instance makeQueryInstance(String query) {
         double[] values = new double[instances.numAttributes()];
         values[0] = instances.attribute(0).addStringValue(query);
